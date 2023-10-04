@@ -7,12 +7,10 @@ import com.sumdu.edu.ua.ppjk.ebooks.exception.BookNotFoundException;
 import com.sumdu.edu.ua.ppjk.ebooks.model.Book;
 import com.sumdu.edu.ua.ppjk.ebooks.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,11 +18,10 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository repository;
-    private final ModelMapper mapper;
 
     @Override
     public Book save(BookRequestDTO book) {
-        BookEntity savedBook = repository.insert(mapper.map(book, BookEntity.class));
+        BookEntity savedBook = repository.insert(mapToBookEntity(book));
         return Book.builder()
                 .title(savedBook.getTitle())
                 .author(savedBook.getAuthor())
@@ -41,11 +38,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(String bookTitle, BookRequestDTO bookToUpdate) {
-        Optional<BookEntity> byTitle = repository.findByTitle(bookTitle);
-        if (byTitle.isEmpty()) {
-            throw new BookNotFoundException("Book with title -> " + bookTitle + " NOT FOUND");
-        }
-        BookEntity bookEntity = byTitle.get();
+        BookEntity bookEntity = repository.findByTitle(bookTitle)
+                .orElseThrow(() -> new BookNotFoundException("Book with title -> " + bookTitle + " NOT FOUND"));
+
         updateBook(bookEntity, bookToUpdate);
 
         return Book.builder()
@@ -57,6 +52,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void delete(String bookTitle) {
+        repository.findByTitle(bookTitle)
+                .orElseThrow(() -> new BookNotFoundException("Book with title -> " + bookTitle + " NOT FOUND"));
+
         repository.deleteByTitle(bookTitle);
     }
 
@@ -69,6 +67,18 @@ public class BookServiceImpl implements BookService {
     }
 
     private BookResponseDTO mapToBookResponse(BookEntity bookEntity) {
-        return mapper.map(bookEntity, BookResponseDTO.class);
+        return BookResponseDTO.builder()
+                .title(bookEntity.getTitle())
+                .author(bookEntity.getAuthor())
+                .year(bookEntity.getYear())
+                .build();
+    }
+
+    private BookEntity mapToBookEntity(BookRequestDTO book) {
+        return BookEntity.builder()
+                .title(book.title())
+                .author(book.author())
+                .year(book.year())
+                .build();
     }
 }

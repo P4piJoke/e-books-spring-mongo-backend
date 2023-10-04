@@ -22,11 +22,4 @@ public class BookEntity {
     private String author;
 
     private Long year;
-
-    @Override
-    public String toString() {
-        return String.format(
-                "BookEntity[id=%s, title='%s', author='%s', year='%s']",
-                id, title, author, year);
-    }
 }
