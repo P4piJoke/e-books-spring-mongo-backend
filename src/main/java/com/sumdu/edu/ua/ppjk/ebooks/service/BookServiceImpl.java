@@ -22,11 +22,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book save(BookRequestDTO book) {
         BookEntity savedBook = repository.insert(mapToBookEntity(book));
-        return Book.builder()
-                .title(savedBook.getTitle())
-                .author(savedBook.getAuthor())
-                .year(savedBook.getYear())
-                .build();
+        return mapToBook(savedBook);
     }
 
     @Override
@@ -37,17 +33,20 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public Book getByTitle(String title) {
+        BookEntity bookEntity = repository.findByTitle(title)
+                .orElseThrow(() -> new BookNotFoundException("Book with title -> " + title + " NOT FOUND"));
+        return mapToBook(bookEntity);
+    }
+
+    @Override
     public Book update(String bookTitle, BookRequestDTO bookToUpdate) {
         BookEntity bookEntity = repository.findByTitle(bookTitle)
                 .orElseThrow(() -> new BookNotFoundException("Book with title -> " + bookTitle + " NOT FOUND"));
 
         updateBook(bookEntity, bookToUpdate);
 
-        return Book.builder()
-                .title(bookEntity.getTitle())
-                .author(bookEntity.getAuthor())
-                .year(bookEntity.getYear())
-                .build();
+        return mapToBook(bookEntity);
     }
 
     @Override
@@ -64,6 +63,14 @@ public class BookServiceImpl implements BookService {
         bookEntity.setYear(bookToUpdate.year());
 
         repository.save(bookEntity);
+    }
+
+    private static Book mapToBook(BookEntity savedBook) {
+        return Book.builder()
+                .title(savedBook.getTitle())
+                .author(savedBook.getAuthor())
+                .year(savedBook.getYear())
+                .build();
     }
 
     private BookResponseDTO mapToBookResponse(BookEntity bookEntity) {

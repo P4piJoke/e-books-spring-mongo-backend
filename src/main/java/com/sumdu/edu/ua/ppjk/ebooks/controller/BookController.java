@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ import java.util.StringJoiner;
 @RestController
 @RequestMapping("/api/v1/e-books")
 @RequiredArgsConstructor
+@CrossOrigin
 public class BookController {
 
     private final BookService service;
@@ -49,6 +51,12 @@ public class BookController {
     public ResponseEntity<List<BookResponseDTO>> getBooksList() {
         var books = service.getAll();
         return ResponseEntity.ok(books);
+    }
+
+    @GetMapping("/book/{title}")
+    public ResponseEntity<Book> getBook(@PathVariable String title) {
+        var book = service.getByTitle(title);
+        return ResponseEntity.ok(book);
     }
 
     @PutMapping("/{book}/update")

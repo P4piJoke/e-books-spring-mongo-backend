@@ -12,6 +12,8 @@ public interface BookService {
 
     List<BookResponseDTO> getAll();
 
+    Book getByTitle(String title);
+
     Book update(String bookTitle, BookRequestDTO bookToUpdate);
 
     void delete(String bookTitle);
